@@ -1,0 +1,17 @@
+CREATE DATABASE online_order_system;
+USE online_order_system;
+
+-- Menu Table
+CREATE TABLE menu (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(100),
+    price DECIMAL(10,2)
+);
+
+-- Orders Table
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    items TEXT,
+    total DECIMAL(10,2),
+    payment_status VARCHAR(50)
+);

@@ -1,0 +1,69 @@
+import mysql.connector
+
+class OnlineOrderSystem:
+    def __init__(self):
+        self.db = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",           # add your password
+            database="online_order_system"
+        )
+        self.cursor = self.db.cursor()
+
+    # --------------------------
+    # 1. Add items to menu
+    # --------------------------
+    def add_menu_item(self, item, price):
+        query = "INSERT INTO menu (item_name, price) VALUES (%s, %s)"
+        self.cursor.execute(query, (item, price))
+        self.db.commit()
+        print(f"Added '{item}' to menu at ₹{price}")
+
+    # --------------------------
+    # 2. Place order
+    # --------------------------
+    def place_order(self, items):
+        # Fetch prices from DB
+        total = 0
+        for item in items:
+            self.cursor.execute("SELECT price FROM menu WHERE item_name=%s", (item,))
+            result = self.cursor.fetchone()
+            if result:
+                total += float(result[0])
+            else:
+                print(f"Item '{item}' not available!")
+                return
+
+        items_str = ", ".join(items)
+        query = "INSERT INTO orders (items, total, payment_status) VALUES (%s, %s, 'Pending')"
+        self.cursor.execute(query, (items_str, total))
+        self.db.commit()
+
+        print(f"Order placed successfully! Total = ₹{total}")
+
+    # --------------------------
+    # 3. Track order history
+    # --------------------------
+    def show_order_history(self):
+        self.cursor.execute("SELECT * FROM orders")
+        orders = self.cursor.fetchall()
+
+        if not orders:
+            print("No orders yet.")
+            return
+
+        for order in orders:
+            print("\nOrder ID:", order[0])
+            print(" Items:", order[1])
+            print(" Total:", order[2])
+            print(" Payment Status:", order[3])
+
+    # --------------------------
+    # 4. Update payment status
+    # --------------------------
+    def update_payment_status(self, order_id, status):
+        query = "UPDATE orders SET payment_status=%s WHERE id=%s"
+        self.cursor.execute(query, (status, order_id))
+        self.db.commit()
+
+        print(f"Payment status updated to '{status}' for Order ID {order_id}")
